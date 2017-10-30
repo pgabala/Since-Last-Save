@@ -1,6 +1,6 @@
 {
-    "name": "different-or-dirty",
-    "displayName": "different or dirty",
+    "name": "since-last-save",
+    "displayName": "Since Last Save",
     "description": "displays if a file has changed since the last save",
     "version": "0.0.1",
     "publisher": "Patrick",
