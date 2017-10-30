@@ -29,7 +29,7 @@ class DiffChecker {
     }
 
     public updateDiffMessage() {
-        this._statusBarItem.text = '$(diff)';
+        this._statusBarItem.text = '$(diff) File Changed';
         this._statusBarItem.color = 'red';
         this._statusBarItem.tooltip = 'file has changed since last save';
     }
@@ -44,6 +44,10 @@ class DiffChecker {
         return fileText;
     }
 
+    public hideStatusBarItem() {
+        this._statusBarItem.hide();
+    }
+
     dispose() {
         this._statusBarItem.dispose();
     }
@@ -51,7 +55,7 @@ class DiffChecker {
 
 class DiffCheckerController {
     private _diffChecker: DiffChecker;
-    private _disposable: vscode.Disposable;
+    private _disposable: Disposable;
     private _currentFileContent: string;
 
     constructor(diffChecker: DiffChecker) {
@@ -72,6 +76,7 @@ class DiffCheckerController {
 
     private _onSave() {
         this._currentFileContent = this._diffChecker.setFileText();
+        this._diffChecker.hideStatusBarItem();
     }
 
     private _onChange() {
