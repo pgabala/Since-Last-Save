@@ -1,8 +1,8 @@
 'use strict';
 
-import * as vscode from 'vscode';
+import {ExtensionContext, StatusBarItem, window, workspace, Disposable} from 'vscode';
 
-export function activate(context: vscode.ExtensionContext) {
+export function activate(context: ExtensionContext) {
 
     let diffChecker = new DiffChecker();
     let controller = new DiffCheckerController(diffChecker);
@@ -11,11 +11,11 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 class DiffChecker {
-    private _statusBarItem: vscode.StatusBarItem;
+    private _statusBarItem: StatusBarItem;
 
     public checkForDifference(currentFileText: string) {
         if (!this._statusBarItem) {
-            this._statusBarItem = vscode.window.createStatusBarItem();
+            this._statusBarItem = window.createStatusBarItem();
         }
 
         let changedText = this.setFileText();
@@ -37,8 +37,8 @@ class DiffChecker {
     public setFileText() {
         let fileText = undefined;
 
-        if (vscode.window.activeTextEditor) {
-            fileText = vscode.window.activeTextEditor.document.getText();
+        if (window.activeTextEditor) {
+            fileText = window.activeTextEditor.document.getText();
         }
 
         return fileText;
@@ -57,13 +57,13 @@ class DiffCheckerController {
     constructor(diffChecker: DiffChecker) {
         this._diffChecker = diffChecker;
 
-        let subscriptions: vscode.Disposable[] = [];
-        vscode.workspace.onDidChangeTextDocument(this._onChange, this, subscriptions)
-        vscode.workspace.onDidSaveTextDocument(this._onSave, this, subscriptions);
+        let subscriptions: Disposable[] = [];
+        workspace.onDidChangeTextDocument(this._onChange, this, subscriptions)
+        workspace.onDidSaveTextDocument(this._onSave, this, subscriptions);
 
         this._currentFileContent = this._diffChecker.setFileText();
 
-        this._disposable = vscode.Disposable.from(...subscriptions);
+        this._disposable = Disposable.from(...subscriptions);
     }
 
     dispose() {
