@@ -1,29 +1,83 @@
 'use strict';
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
+
 import * as vscode from 'vscode';
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 
-    // Use the console to output diagnostic information (console.log) and errors (console.error)
-    // This line of code will only be executed once when your extension is activated
-    console.log('Congratulations, your extension "different-or-dirty" is now active!');
+    let diffChecker = new DiffChecker();
+    let controller = new DiffCheckerController(diffChecker);
 
-    // The command has been defined in the package.json file
-    // Now provide the implementation of the command with  registerCommand
-    // The commandId parameter must match the command field in package.json
-    let disposable = vscode.commands.registerCommand('extension.sayHello', () => {
-        // The code you place here will be executed every time your command is executed
-
-        // Display a message box to the user
-        vscode.window.showInformationMessage('Hello World!');
-    });
-
-    context.subscriptions.push(disposable);
+    context.subscriptions.push(diffChecker)
 }
 
-// this method is called when your extension is deactivated
+class DiffChecker {
+    private _statusBarItem: vscode.StatusBarItem;
+
+    public checkForDifference(currentFileText: string) {
+        if (!this._statusBarItem) {
+            this._statusBarItem = vscode.window.createStatusBarItem();
+        }
+
+        let changedText = this.setFileText();
+
+        if (currentFileText !== changedText) {
+            this.updateDiffMessage();
+            this._statusBarItem.show();
+        } else {
+            this._statusBarItem.hide();
+        }
+    }
+
+    public updateDiffMessage() {
+        this._statusBarItem.text = '$(diff)';
+        this._statusBarItem.color = 'red';
+        this._statusBarItem.tooltip = 'file has changed since last save';
+    }
+
+    public setFileText() {
+        let fileText = undefined;
+
+        if (vscode.window.activeTextEditor) {
+            fileText = vscode.window.activeTextEditor.document.getText();
+        }
+
+        return fileText;
+    }
+
+    dispose() {
+        this._statusBarItem.dispose();
+    }
+}
+
+class DiffCheckerController {
+    private _diffChecker: DiffChecker;
+    private _disposable: vscode.Disposable;
+    private _currentFileContent: string;
+
+    constructor(diffChecker: DiffChecker) {
+        this._diffChecker = diffChecker;
+
+        let subscriptions: vscode.Disposable[] = [];
+        vscode.workspace.onDidChangeTextDocument(this._onChange, this, subscriptions)
+        vscode.workspace.onDidSaveTextDocument(this._onSave, this, subscriptions);
+
+        this._currentFileContent = this._diffChecker.setFileText();
+
+        this._disposable = vscode.Disposable.from(...subscriptions);
+    }
+
+    dispose() {
+        this._disposable.dispose();
+    }
+
+    private _onSave() {
+        this._currentFileContent = this._diffChecker.setFileText();
+    }
+
+    private _onChange() {
+        this._diffChecker.checkForDifference(this._currentFileContent);
+    }
+}
+
 export function deactivate() {
 }
