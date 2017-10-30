@@ -7,7 +7,7 @@ export function activate(context: vscode.ExtensionContext) {
     let diffChecker = new DiffChecker();
     let controller = new DiffCheckerController(diffChecker);
 
-    context.subscriptions.push(diffChecker)
+    context.subscriptions.push(diffChecker);
 }
 
 class DiffChecker {
