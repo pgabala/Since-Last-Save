@@ -63,7 +63,8 @@ class DiffCheckerController {
 
         let subscriptions: Disposable[] = [];
         workspace.onDidChangeTextDocument(this._onChange, this, subscriptions)
-        workspace.onDidSaveTextDocument(this._onSave, this, subscriptions);
+        workspace.onDidSaveTextDocument(this._onSaveOrContextSwitch, this, subscriptions);
+        workspace.onDidOpenTextDocument(this._onSaveOrContextSwitch, this, subscriptions);
 
         this._currentFileContent = this._diffChecker.setFileText();
 
@@ -74,7 +75,8 @@ class DiffCheckerController {
         this._disposable.dispose();
     }
 
-    private _onSave() {
+    private _onSaveOrContextSwitch() {
+        console.log(workspace.textDocuments)
         this._currentFileContent = this._diffChecker.setFileText();
         this._diffChecker.hideStatusBarItem();
     }
@@ -85,4 +87,5 @@ class DiffCheckerController {
 }
 
 export function deactivate() {
+    
 }
